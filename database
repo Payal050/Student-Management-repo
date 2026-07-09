@@ -1,0 +1,115 @@
+from pymongo import MongoClient
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+
+# Create Database
+db = client["StudentDB"]
+
+# Create Collection
+students = db["students"]
+
+while True:
+
+    print("\n========== Student Database Management System ==========")
+    print("1. Add Student")
+    print("2. Show Students")
+    print("3. Update Student")
+    print("4. Delete Student")
+    print("5. Exit")
+
+    choice = input("Enter your choice: ")
+
+    # Add Student
+    if choice == "1":
+
+        roll_no = input("Enter Roll Number: ")
+
+        # Check if roll number already exists
+        if students.find_one({"roll_no": roll_no}):
+            print("Roll Number already exists!")
+
+        else:
+            name = input("Enter Student Name: ")
+            age = input("Enter Age: ")
+            course = input("Enter Course: ")
+
+            student = {
+                "roll_no": roll_no,
+                "name": name,
+                "age": age,
+                "course": course
+            }
+
+            students.insert_one(student)
+            print("Student Added Successfully!")
+
+    # Show Students
+    elif choice == "2":
+
+        data = students.find()
+
+        found = False
+
+        print("\n========== Student Records ==========")
+
+        for student in data:
+            found = True
+            print("Roll Number :", student["roll_no"])
+            print("Name        :", student["name"])
+            print("Age         :", student["age"])
+            print("Course      :", student["course"])
+            print("-------------------------------------")
+
+        if not found:
+            print("No Student Record Found!")
+
+    # Update Student
+    elif choice == "3":
+
+        roll_no = input("Enter Roll Number to Update: ")
+
+        if students.find_one({"roll_no": roll_no}):
+
+            new_name = input("Enter New Name: ")
+            new_age = input("Enter New Age: ")
+            new_course = input("Enter New Course: ")
+
+            students.update_one(
+                {"roll_no": roll_no},
+                {
+                    "$set": {
+                        "name": new_name,
+                        "age": new_age,
+                        "course": new_course
+                    }
+                }
+            )
+
+            print("Student Updated Successfully!")
+
+        else:
+            print("Student Not Found!")
+
+    # Delete Student
+    elif choice == "4":
+
+        roll_no = input("Enter Roll Number to Delete: ")
+
+        result = students.delete_one({"roll_no": roll_no})
+
+        if result.deleted_count > 0:
+            print("Student Deleted Successfully!")
+        else:
+            print("Student Not Found!")
+
+    # Exit
+    elif choice == "5":
+
+        print("Thank You! Program Closed.")
+        client.close()
+        break
+
+    # Invalid Choice
+    else:
+        print("Invalid Choice! Please Enter a Number Between 1 and 5.")
